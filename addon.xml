@@ -1,0 +1,23 @@
+﻿<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<addon id="plugin.video.fabriqueculturelle"
+       name="La Fabrique Culturelle"
+       version="0.0.1"
+       provider-name="CB"
+>
+    <requires>
+        <import addon="xbmc.python" version="2.1.0"/>
+        <import addon="xbmc.json" version="6.0.0"/>
+        <import addon="xbmc.addon" version="12.0.0"/>
+        <import addon="script.module.simplejson" version="2.0.10"/>
+    </requires>
+    <extension point="xbmc.python.pluginsource" library="default.py">
+        <provides>video</provides>
+    </extension>
+    <extension point="xbmc.addon.metadata">
+        <platform>all</platform>
+	    <summary >Addiciel vidéo donnant accès à La Fabrique Culturelle</summary>
+	    <summary lang="en">Plugin for the La Fabrique Culturelle site</summary>
+        <description>Cet addiciel permet d'accèder à La Fabrique Culturelle .  La plupart des vidéos ne sont accessibles qu'au Canada.</description>
+		<description lang="en">Play all videos fromLa Fabrique Culturelle  site. Most videos can only be accessed in Canada.</description>
+    </extension>
+</addon>

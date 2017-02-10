@@ -16,18 +16,16 @@ from resources.lib import content, parse, navig
 #from collections import OrderedDict
 
 def peupler():
-    if filtres['content']['mediaBundleId']>0:
+    if filtres['mediaBundleId']>0:
         creer_liste_videos()
-    elif filtres['content']['genreId']!='':
-        creer_liste_filtree()
+    #elif filtres['filterBy']!="":
+    #    creer_liste_filtree()
     else:
-        creer_menu_categories()
+        creer_menu()
 
-def creer_menu_categories():
+def creer_menu():
     """ function docstring """
-
-    navig.ajouterItemAuMenu(content.dictOfGenres(filtres))
-    navig.ajouterItemAuMenu(content.dictOfMainDirs(filtres))
+    navig.ajouterItemAuMenu(content.menu(filtres))
 
 def creer_liste_filtree():
     """ function docstring """

@@ -10,7 +10,7 @@
 # vim......: set tabstop=4
 #
 
-import sys,urllib, xbmcgui, xbmcplugin, xbmcaddon,re,cache, simplejson, xbmc
+import sys,urllib, xbmcgui, xbmcplugin, xbmcaddon,re,cache, simplejson, xbmc, content
 
 ADDON = xbmcaddon.Addon()
 ADDON_IMAGES_BASEPATH = ADDON.getAddonInfo('path')+'/resources/media/images/'
@@ -19,8 +19,9 @@ ADDON_FANART = ADDON.getAddonInfo('path')+'/fanart.jpg'
 __handle__ = int(sys.argv[1])
 
 def ajouterItemAuMenu(items):
-    xbmcplugin.addSortMethod(__handle__, xbmcplugin.SORT_METHOD_LABEL_IGNORE_THE)
-    xbmcplugin.addSortMethod(__handle__, xbmcplugin.SORT_METHOD_DATE)
+    #xbmcplugin.addSortMethod(__handle__, xbmcplugin.SORT_METHOD_LABEL_IGNORE_THE)
+    #xbmcplugin.addSortMethod(__handle__, xbmcplugin.SORT_METHOD_DATE)
+    
     
     for item in items:
         if item['isDir'] == True:
@@ -28,8 +29,8 @@ def ajouterItemAuMenu(items):
             
         else:
             ajouterVideo(item)
-            xbmc.executebuiltin('Container.SetViewMode('+str(xbmcplugin.SORT_METHOD_DATE)+')')
-            xbmc.executebuiltin('Container.SetSortDirection(0)')
+            #xbmc.executebuiltin('Container.SetViewMode('+str(xbmcplugin.SORT_METHOD_DATE)+')')
+            #xbmc.executebuiltin('Container.SetSortDirection(0)')
 
 
 
@@ -38,7 +39,6 @@ def ajouterRepertoire(show):
     nom = show['nom']
     url = show['url']
     iconimage =show['image']
-    genreId = show['genreId']
     resume = remove_any_html_tags(show['resume'])
     fanart = show['fanart']
     filtres = show['filtres']
@@ -129,9 +129,13 @@ def ajouterVideo(show):
 RE_HTML_TAGS = re.compile(r'<[^>]+>')
 RE_AFTER_CR = re.compile(r'\n.*')
 
-def jouer_video(media_uid):
+  
+
+def jouer_video(source):
     """ function docstring """
     check_for_internet_connection()
+
+    media_uid = content.getMediaUID(source)
     
     # Obtenir JSON avec liens RTMP du playlistService
     video_json = simplejson.loads(\

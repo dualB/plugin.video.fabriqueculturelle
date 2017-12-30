@@ -1,16 +1,8 @@
-# -*- coding: cp1252 -*-
+# -*- coding: utf8 -*-
 
-""" -*- coding: utf-8 -*- """
-# version 3.0.0 - By CB
-# version 2.0.2 - By SlySen
-# version 0.2.6 - By CB
-#
-# pylint...: --max-line-length 120
-# vim......: set expandtab
-# vim......: set tabstop=4
-#
+# version 1.0.0 - By CB
 
-import sys,urllib, xbmcgui, xbmcplugin, xbmcaddon,re,cache, simplejson, xbmc, content
+import sys,urllib, xbmcgui, xbmcplugin, xbmcaddon,re,cache, simplejson, xbmc, content, unicodedata
 
 ADDON = xbmcaddon.Addon()
 ADDON_IMAGES_BASEPATH = ADDON.getAddonInfo('path')+'/resources/media/images/'
@@ -18,24 +10,19 @@ ADDON_FANART = ADDON.getAddonInfo('path')+'/fanart.jpg'
 
 __handle__ = int(sys.argv[1])
 
-def ajouterItemAuMenu(items):
-    #xbmcplugin.addSortMethod(__handle__, xbmcplugin.SORT_METHOD_LABEL_IGNORE_THE)
-    #xbmcplugin.addSortMethod(__handle__, xbmcplugin.SORT_METHOD_DATE)
-    
-    
+
+
+def ajouterItemAuMenu(items):    
     for item in items:
         if item['isDir'] == True:
             ajouterRepertoire(item)
             
         else:
             ajouterVideo(item)
-            #xbmc.executebuiltin('Container.SetViewMode('+str(xbmcplugin.SORT_METHOD_DATE)+')')
-            #xbmc.executebuiltin('Container.SetSortDirection(0)')
 
 
 
 def ajouterRepertoire(show):
-
     nom = show['nom']
     url = show['url']
     iconimage =show['image']
@@ -66,7 +53,6 @@ def ajouterRepertoire(show):
         }\
     )
     setFanart(liz,fanart)
-
     is_it_ok = xbmcplugin.addDirectoryItem(handle=__handle__, url=entry_url, listitem=liz, isFolder=True)
 
     return is_it_ok
@@ -94,11 +80,15 @@ def ajouterVideo(show):
     premiere = show['startDate']
     episode = show['episodeNo']
     saison = show['seasonNo']
+
+    mediaId = show['mediaId']
     
 
 
     is_it_ok = True
-    entry_url = sys.argv[0]+"?url="+urllib.quote_plus(the_url)+"&sourceId="+(sourceId)
+
+    entry_url = sys.argv[0]+"?url="+normalizeUrl(the_url)+"&sourceId="+str(mediaId)
+    
 
     if resume != '':
         if ADDON.getSetting('EmissionNameInPlotEnabled') == 'true':
@@ -120,7 +110,9 @@ def ajouterVideo(show):
             "Season":saison}\
     )
     liz.addContextMenuItems([('Informations', 'Action(Info)')])
+
     setFanart(liz,fanart)
+
     liz.setProperty('IsPlayable', 'true')
 
     is_it_ok = xbmcplugin.addDirectoryItem(handle=__handle__, url=entry_url, listitem=liz, isFolder=False)
@@ -129,59 +121,55 @@ def ajouterVideo(show):
 RE_HTML_TAGS = re.compile(r'<[^>]+>')
 RE_AFTER_CR = re.compile(r'\n.*')
 
-  
 
-def jouer_video(source):
-    """ function docstring """
+def jouer_video(media_uid):
+    """ function docstring """    
+    show = content.formatShow(media_uid)
+    
+    source = show['source']
+    if source!='mnmedia':
+        xbmc.executebuiltin('Notification(Source non supportÃ©e,Le source %s n''est pas supportÃ© actuellement,,8000)' % simplejson.dumps(source))
+        return
+        
     check_for_internet_connection()
+    m3u8_pl=m3u8(show['sourceId'])
+    uri = obtenirMeilleurStream(m3u8_pl)   
 
-    media_uid = content.getMediaUID(source)
-    
-    # Obtenir JSON avec liens RTMP du playlistService
-    video_json = simplejson.loads(\
-        cache.get_cached_content(\
-            'http://production.ps.delve.cust.lldns.net/r/PlaylistService/media/%s/getPlaylistByMediaId' % media_uid\
-        )\
-    )
-    
-    # Preparer list de videos à jouer
-    playlist = xbmc.PlayList(xbmc.PLAYLIST_VIDEO)
-    playlist.clear()
-
-    # Analyser chaque stream disponible pour trouver la meilleure qualité
-    #for play_list_item in video_json['playlistItems']:
-    play_list_item =video_json['playlistItems'][0]
-    
-    highest_bit_rate = 0
-    stream_url = None
-    for stream in play_list_item['streams']:
-        if stream['videoBitRate'] > highest_bit_rate:
-            highest_bit_rate = stream['videoBitRate']
-            stream_url = stream['url']
-    if stream_url:
-        # Générer un lien compatible pour librtmp
-        # rtmp_url - play_path - swf_url
-        url_final = '%s playPath=%s swfUrl=%s swfVfy=true' % (\
-            stream_url[:stream_url.find('mp4')],\
-            stream_url[stream_url.find('mp4'):],\
-            'http://s.delvenetworks.com/deployments/flash-player/flash-player-5.10.1.swf?playerForm=Chromeless'\
-        )
-       # log('Starting playback of :' + urllib.quote_plus(url_final))
+    if uri:
         item = xbmcgui.ListItem(\
-            video_json['title'],\
-            iconImage=video_json['imageUrl'],\
-            thumbnailImage=play_list_item['thumbnailImageUrl'], path=url_final)
-        #playlist.add(url_final, item)
-        play_item = xbmcgui.ListItem(path=url_final)
-        xbmc.log("**************************************DING? " +sys.argv[0])
-        xbmcplugin.setResolvedUrl(__handle__,True, item)
-        xbmc.log("**************************************DONG! ")
-    else:
-        xbmc.executebuiltin('Notification(%s,Incapable d''obtenir lien du video,5000,%s' % (ADDON_NAME, ADDON_ICON))
+            show['nom'],\
+            iconImage=show['image'],\
+            thumbnailImage=show['fanart'], path=uri)
 
-    #if playlist.size() > 0:
-    #    xbmc.Player(xbmc.PLAYER_CORE_DVDPLAYER).play(playlist)
-   
+        play_item = xbmcgui.ListItem(path=uri)
+        xbmcplugin.setResolvedUrl(__handle__,True, item)
+    else:
+        xbmc.executebuiltin('Notification(Aucun lien disponible,Incapable d''obtenir lien du vidÃ©o,5000)')
+
+def m3u8(refID):
+    return cache.get_cached_content('https://mnmedias.api.telequebec.tv/m3u8/%s.m3u8' % refID)
+
+def obtenirMeilleurStream(pl):
+    """ function docstring """
+    maxBW = 0
+    bandWidth=None
+    uri = None
+    for line in pl.split('\n'):
+        
+        if re.search('#EXT-X',line):
+            bandWidth=None
+            try:
+                match  = re.search('BANDWIDTH=(\d+)',line)
+                bandWidth = int(match.group(1))
+            except :
+                bandWidth=None
+        elif line.startswith('http'):
+            if bandWidth!=None:
+                if bandWidth>maxBW:
+                    maxBW = bandWidth
+                    uri = line
+    return uri
+
 
 def check_for_internet_connection():
     """ function docstring """
@@ -197,11 +185,21 @@ def check_for_internet_connection():
    #     )
    #     exit()
     return
+def normalizeUrl(the_url):
+    try:
+        the_url =  unicodedata.normalize("NFKD", the_url)
+        return urllib.quote_plus(the_url)
+    except Exception:
+        return the_url
 
 def remove_any_html_tags(text, crlf=True):
     """ function docstring """
-    text = RE_HTML_TAGS.sub('', text)
-    text = text.lstrip()
-    if crlf == True:
-        text = RE_AFTER_CR.sub('', text)
-    return text
+    try:
+        text = RE_HTML_TAGS.sub('', text)
+        text = text.lstrip()
+        if crlf == True:
+            text = RE_AFTER_CR.sub('', text)
+        return text
+    except Exception:
+        return ''
+

@@ -2,6 +2,7 @@
 <settings>
     <!-- APPARENCE -->
     <category label="32100">
+		<setting id="nbRecherche" type="slider" label="32103" default="10" range="5,1,100" option="int"/>
         <setting label="32101" type="bool" id="FanartEnabled" default="true"/>
         <setting label="32102" type="bool" id="FanartEmissionsEnabled" default="true" enable="eq(-1,true)"/>
         <setting label="32114" type="bool" id="EmissionNameInPlotEnabled" default="true"/>

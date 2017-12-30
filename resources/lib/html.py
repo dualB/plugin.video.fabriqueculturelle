@@ -1,40 +1,68 @@
-# -*- coding: cp1252 -*-
+# -*- coding: utf8 -*-
 
-""" -*- coding: utf-8 -*- """
-# version 3.0.0 - By CB
-# version 2.0.2 - By SlySen
-# version 0.2.6 - By CB
+# version 1.0.0 - By CB
 
-import urllib2,re, socket
+import urllib,urllib2,xbmc,re
 
+def get_url_txt(the_url):
+    """ function docstring """
+    req = urllib2.Request(the_url)
+    req.add_header(\
+        'User-Agent',\
+        'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:19.0) Gecko/20100101 Firefox/19.0'\
+    )
+    req.add_header('Accept-Charset', 'utf-8')
+    response = urllib2.urlopen(req)
+    link = response.read()
+    #link = urllib2.quote(link)
+    #link = urllib2.unquote(link)
+    response.close()
+    return link
 
-# Merci ‡ l'auteur de cette fonction
+def get_url_txt_post(the_url,data):
+    """ function docstring """
+    req = urllib2.Request(the_url,urllib.urlencode(data))
+    req.add_header(\
+        'User-Agent',\
+        'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:19.0) Gecko/20100101 Firefox/19.0'\
+    )
+    req.add_header('Accept-Charset', 'utf-8')
+    response = urllib2.urlopen(req)
+    link = response.read()
+ ##   link = html_unescape(link)
+    link = urllib2.quote(link)
+    link = urllib2.unquote(link)
+    
+    response.close()
+    return link   
+
+# Merci √† l'auteur de cette fonction
 def unescape_callback(matches):
     """ function docstring """
-    html_entities =\
+    html_entities = \
     {
         'quot':'\"', 'amp':'&', 'apos':'\'', 'lt':'<',
-        'gt':'>', 'nbsp':' ', 'copy':'©', 'reg':'Æ',
-        'Agrave':'¿', 'Aacute':'¡', 'Acirc':'¬',
-        'Atilde':'√', 'Auml':'ƒ', 'Aring':'≈',
-        'AElig':'∆', 'Ccedil':'«', 'Egrave':'»',
-        'Eacute':'…', 'Ecirc':' ', 'Euml':'À',
-        'Igrave':'Ã', 'Iacute':'Õ', 'Icirc':'Œ',
-        'Iuml':'œ', 'ETH':'–', 'Ntilde':'—',
-        'Ograve':'“', 'Oacute':'”', 'Ocirc':'‘',
-        'Otilde':'’', 'Ouml':'÷', 'Oslash':'ÿ',
-        'Ugrave':'Ÿ', 'Uacute':'⁄', 'Ucirc':'€',
-        'Uuml':'‹', 'Yacute':'›', 'agrave':'‡',
-        'aacute':'·', 'acirc':'‚', 'atilde':'„',
-        'auml':'‰', 'aring':'Â', 'aelig':'Ê',
-        'ccedil':'Á', 'egrave':'Ë', 'eacute':'È',
-        'ecirc':'Í', 'euml':'Î', 'igrave':'Ï',
-        'iacute':'Ì', 'icirc':'Ó', 'iuml':'Ô',
-        'eth':'', 'ntilde':'Ò', 'ograve':'Ú',
-        'oacute':'Û', 'ocirc':'Ù', 'otilde':'ı',
-        'ouml':'ˆ', 'oslash':'¯', 'ugrave':'˘',
-        'uacute':'˙', 'ucirc':'˚', 'uuml':'¸',
-        'yacute':'˝', 'yuml':'ˇ'
+        'gt':'>', 'nbsp':' ', 'copy':'¬©', 'reg':'¬Æ',
+        'Agrave':'√Ä', 'Aacute':'√Å', 'Acirc':'√Ç',
+        'Atilde':'√É', 'Auml':'√Ñ', 'Aring':'√Ö',
+        'AElig':'√Ü', 'Ccedil':'√á', 'Egrave':'√à',
+        'Eacute':'√â', 'Ecirc':'√ä', 'Euml':'√ã',
+        'Igrave':'√å', 'Iacute':'√ç', 'Icirc':'√é',
+        'Iuml':'√è', 'ETH':'√ê', 'Ntilde':'√ë',
+        'Ograve':'√í', 'Oacute':'√ì', 'Ocirc':'√î',
+        'Otilde':'√ï', 'Ouml':'√ñ', 'Oslash':'√ò',
+        'Ugrave':'√ô', 'Uacute':'√ö', 'Ucirc':'√õ',
+        'Uuml':'√ú', 'Yacute':'√ù', 'agrave':'√†',
+        'aacute':'√°', 'acirc':'√¢', 'atilde':'√£',
+        'auml':'√§', 'aring':'√•', 'aelig':'√¶',
+        'ccedil':'√ß', 'egrave':'√®', 'eacute':'√©',
+        'ecirc':'√™', 'euml':'√´', 'igrave':'√¨',
+        'iacute':'√≠', 'icirc':'√Æ', 'iuml':'√Ø',
+        'eth':'√∞', 'ntilde':'√±', 'ograve':'√≤',
+        'oacute':'√≥', 'ocirc':'√¥', 'otilde':'√µ',
+        'ouml':'√∂', 'oslash':'√∏', 'ugrave':'√π',
+        'uacute':'√∫', 'ucirc':'√ª', 'uuml':'√º',
+        'yacute':'√Ω', 'yuml':'√ø'
     }
 
     entity = matches.group(0)
@@ -59,35 +87,3 @@ def html_unescape(data):
     data = re.sub(r'&#?x?(\w+);|\\\\u\d{4}', unescape_callback, data)
     data = data.encode('utf-8')
     return data
-
-def get_url_txt(the_url):
-    """ function docstring """
-    req = urllib2.Request(the_url)
-    req.add_header(\
-        'User-Agent',\
-        'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:19.0) Gecko/20100101 Firefox/19.0'\
-    )
-    req.add_header('Accept-Charset', 'utf-8')
-    response = urllib2.urlopen(req)
-    link = response.read()
-    #link = html_unescape(link)
-    link = urllib2.quote(link)
-    link = urllib2.unquote(link)
-    response.close()
-    return link
-
-
-def is_network_available(url):
-    """ function docstring """
-    try:
-        # see if we can resolve the host name -- tells us if there is a DNS listening
-        host = socket.gethostbyname(url)
-        # connect to the host -- tells us if the host is actually reachable
-        srvcon = socket.create_connection((host, 80), 2)
-        srvcon.close()
-        return True
-    except socket.error:
-        return False
-
-
-

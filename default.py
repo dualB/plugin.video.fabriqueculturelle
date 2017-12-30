@@ -1,41 +1,14 @@
 # -*- coding: cp1252 -*-
 
 """ -*- coding: utf-8 -*- """
-# version 3.0.0 - By CB
-# version 2.0.2 - By SlySen
-# version 0.2.6 - By CB
-#
-# pylint...: --max-line-length 120
-# vim......: set expandtab
-# vim......: set tabstop=4
-#
+# version 1.0.0 - By CB
+
 import os, urllib, sys, traceback, xbmcplugin, xbmcaddon, xbmc, simplejson, xbmcgui
 
 from resources.lib import content, parse, navig
 
-#from collections import OrderedDict
-
 def peupler():
-    if filtres['mediaBundleId']>0:
-        creer_liste_videos()
-    #elif filtres['filterBy']!="":
-    #    creer_liste_filtree()
-    else:
-        creer_menu()
-
-def creer_menu():
-    """ function docstring """
-    navig.ajouterItemAuMenu(content.menu(filtres))
-
-def creer_liste_filtree():
-    """ function docstring """
-
-    navig.ajouterItemAuMenu(parse.get_liste_emissions(filtres))
-        
-
-def creer_liste_videos():
-    """ function docstring """
-    navig.ajouterItemAuMenu(parse.ListeVideosGroupees(filtres))
+    navig.ajouterItemAuMenu(content.getContent(filtres))
 
 def get_params():
     """ function docstring """
@@ -73,10 +46,6 @@ def log(msg):
     if xbmcaddon.Addon().getSetting('DebugMode') == 'true':
         xbmc.log('[%s - DEBUG]: %s' % (xbmcaddon.Addon().getAddonInfo('name'), msg))
 
-# ---
-log('--- init -----------------')
-# ---
-
 PARAMS = get_params()
 
 URL = None
@@ -97,14 +66,14 @@ except StandardError:
     pass
 try:
     FILTERS = urllib.unquote_plus(PARAMS["filters"])
+    filtres = simplejson.loads(FILTERS)
+    filtres['search']['pagesize']=xbmcaddon.Addon().getSetting('nbRecherche')
 except StandardError:
-    FILTERS = content.FILTRES
+    filtres = content.filtreVide()
 try:
     SOURCE_ID = urllib.unquote_plus(PARAMS["sourceId"])
 except StandardError:
     pass
-
-filtres = simplejson.loads(FILTERS)
    
 if SOURCE_ID !='':
     navig.jouer_video(SOURCE_ID)

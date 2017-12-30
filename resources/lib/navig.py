@@ -37,9 +37,12 @@ def ajouterRepertoire(show):
     if iconimage=='':
         iconimage = ADDON_IMAGES_BASEPATH+'default-folder.png'
 
-    """ function docstring """
     entry_url = sys.argv[0]+"?url="+url+\
         "&mode=1"+\
+        "&filters="+urllib.quote(simplejson.dumps(filtres))
+    if nom == 'Rerchercher un mot-clé':
+        entry_url = sys.argv[0]+"?url="+url+\
+        "&mode=10"+\
         "&filters="+urllib.quote(simplejson.dumps(filtres))
   
     is_it_ok = True

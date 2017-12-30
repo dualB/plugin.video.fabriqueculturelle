@@ -10,6 +10,16 @@ from resources.lib import content, parse, navig
 def peupler():
     navig.ajouterItemAuMenu(content.getContent(filtres))
 
+def search():
+    keyboard = xbmc.Keyboard('', 'Rechercher dans la Fabrique Culturelle ')
+    keyboard.doModal()
+    if keyboard.isConfirmed() and keyboard.getText():
+        search_string = keyboard.getText()
+        filtres['search']['terme']=search_string
+        filtres['finished']=True
+        xbmc.log(search_string)
+        peupler()
+    
 def get_params():
     """ function docstring """
     param = []
@@ -85,7 +95,9 @@ else:
     peupler()
     set_content('episodes')
 
-
+if MODE is 10:
+    search()
+    
 if MODE is not 99:
     set_sorting_methods(MODE)
     xbmcplugin.endOfDirectory(int(sys.argv[1]))

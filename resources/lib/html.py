@@ -4,6 +4,8 @@
 
 import urllib,urllib2,xbmc,re
 
+
+
 def get_url_txt(the_url):
     """ function docstring """
     req = urllib2.Request(the_url)
@@ -62,7 +64,7 @@ def unescape_callback(matches):
         'oacute':'ó', 'ocirc':'ô', 'otilde':'õ',
         'ouml':'ö', 'oslash':'ø', 'ugrave':'ù',
         'uacute':'ú', 'ucirc':'û', 'uuml':'ü',
-        'yacute':'ý', 'yuml':'ÿ'
+        'yacute':'ý', 'yuml':'ÿ', 'rsquo':'\''
     }
 
     entity = matches.group(0)
@@ -87,3 +89,25 @@ def html_unescape(data):
     data = re.sub(r'&#?x?(\w+);|\\\\u\d{4}', unescape_callback, data)
     data = data.encode('utf-8')
     return data
+
+def normalizeUrl(the_url):
+    try:
+        the_url =  unicodedata.normalize("NFKD", the_url)
+        return urllib.quote_plus(the_url)
+    except Exception:
+        return the_url
+
+
+RE_HTML_TAGS = re.compile(r'<[^>]+>')
+RE_AFTER_CR = re.compile(r'\n.*')
+
+def remove_any_html_tags(text, crlf=True):
+    """ function docstring """
+    try:
+        text = RE_HTML_TAGS.sub('', text)
+        text = text.lstrip()
+        if crlf == True:
+            text = RE_AFTER_CR.sub('', text)
+        return text
+    except Exception:
+        return ''

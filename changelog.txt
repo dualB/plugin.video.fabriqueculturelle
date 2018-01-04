@@ -1,4 +1,8 @@
-﻿[B]0.0.2 | CB | 2017-12-30[/B] 
+﻿[B]0.0.3 | CB | 2018-01-04[/B] 
+Ajout de la fonction de Recherche, sections Vidéos, Dossiers,Séries
+Débogage et test
+
+[B]0.0.2 | CB | 2017-12-30[/B] 
 Refonte complète
 
 [B]0.0.1 | CB | 2016-09-27[/B] 

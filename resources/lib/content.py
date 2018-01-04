@@ -2,18 +2,13 @@
  
 # version 1.0.0 - By CB
 
-import urllib2, simplejson, parse, cache, re, xbmcaddon, html, xbmc
+import urllib2, simplejson, parse, cache, re, xbmcaddon, html, xbmc,unicodedata, Item
 
 BASE_API = 'http://api.lafabriqueculturelle.tv/v1/'
 BASE_WEB = 'https://www.lafabriqueculturelle.tv'
 BASE_SEARCH = BASE_WEB + '/content/load'
 
-####
-# Le lien à trouver est "      var referenceId = '36387';
-# Puis sur https://mnmedias.api.telequebec.tv/m3u8/369387.m3u8
-####
-
-membreId='membreId'
+membreId='partenaireId'
 themeId = 'themeId'
 regionId = 'regionId'
 form=  'format'
@@ -23,8 +18,8 @@ page= 'page'
 pagesize='pagesize'
 groupBy = 'groupBy'
 
-#                    exclureCommunauteOnly: exclureCommunauteOnly,
-#                    hasPublicite: hasPublicite
+exclureCommunauteOnly = 'exclureCommunauteOnly'
+hasPublicite = 'hasPublicite'
 
 
 def getContent(filtres):
@@ -38,32 +33,33 @@ def getContent(filtres):
 
 
 def filtreVide():
-    return {'finished':False,'groupBy':'','search':{membreId:'',themeId:'',regionId:'',form:'',terme:'',motcle:'',page:'1',pagesize:xbmcaddon.Addon().getSetting('nbRecherche')
-}}
-
-
-def creerItem(liste,nom,filtres,group,isDir,url,image,fanart):
-    item = {'nom': urllib2.unquote(nom),'resume':'',"filtres":filtres,'isDir':isDir,'url':url,'image':image,'fanart':fanart}
-    item['filtres'][groupBy] = group
-    liste.append(item)
+    return {'finished':False,'groupBy':'','search':{membreId:'',themeId:'',regionId:'',form:'',terme:'',motcle:'',\
+                                                    page:'1',pagesize:xbmcaddon.Addon().getSetting('nbRecherche'),\
+                                                    exclureCommunauteOnly:True,hasPublicite:True}}
 
 
 def mainMenu():  
     liste = []
-    creerItem(liste,"Par région",filtreVide(),regionId,True, BASE_API +'Regions',\
-                       xbmcaddon.Addon().getAddonInfo('path')+'/icon.png',xbmcaddon.Addon().getAddonInfo('path')+'/fanart.jpg')
+    liste.append(Item.ItemDir("Naviguer par région",filtreVide(),regionId,True, BASE_API +'Regions',\
+                       xbmcaddon.Addon().getAddonInfo('path')+'/icon.png',xbmcaddon.Addon().getAddonInfo('path')+'/fanart.jpg',1))
     
-    creerItem(liste,"Par thème",filtreVide(),themeId, True, BASE_API +'Categories',\
-                          xbmcaddon.Addon().getAddonInfo('path')+'/icon.png',xbmcaddon.Addon().getAddonInfo('path')+'/fanart.jpg')
+    liste.append(Item.ItemDir("Naviguer par thème",filtreVide(),themeId, True, BASE_API +'Categories',\
+                          xbmcaddon.Addon().getAddonInfo('path')+'/icon.png',xbmcaddon.Addon().getAddonInfo('path')+'/fanart.jpg',1))
 
-    creerItem(liste,'Par partenaire',filtreVide(),membreId, True,BASE_API +'Partners',\
-                         xbmcaddon.Addon().getAddonInfo('path')+'/icon.png',xbmcaddon.Addon().getAddonInfo('path')+'/fanart.jpg')
+    liste.append( Item.ItemDir('Naviguer par partenaire',filtreVide(),membreId, True,BASE_API +'Partners',\
+                         xbmcaddon.Addon().getAddonInfo('path')+'/icon.png',xbmcaddon.Addon().getAddonInfo('path')+'/fanart.jpg',1))
+    
+    for item in getFormats():
+        f = filtreVide()
+        f['search'][form]=str(item['formatId'])
+        f['finished'] = True
+        liste.append(Item.ItemDir(item['title'],f,themeId,True, BASE_API,\
+                                  xbmcaddon.Addon().getAddonInfo('path')+'/icon.png',xbmcaddon.Addon().getAddonInfo('path')+'/fanart.jpg',1))
+    #liste.append(Item.ItemDir('Par format',filtreVide(),form, True,BASE_API +'Formats',\
+    #                     xbmcaddon.Addon().getAddonInfo('path')+'/icon.png',xbmcaddon.Addon().getAddonInfo('path')+'/fanart.jpg',1))
 
-    creerItem(liste,'Par format',filtreVide(),form, True,BASE_API +'Formats',\
-                         xbmcaddon.Addon().getAddonInfo('path')+'/icon.png',xbmcaddon.Addon().getAddonInfo('path')+'/fanart.jpg')
-
-    creerItem(liste,'Rerchercher un mot-clé',filtreVide(),terme, True,BASE_SEARCH,\
-                         xbmcaddon.Addon().getAddonInfo('path')+'/icon.png',xbmcaddon.Addon().getAddonInfo('path')+'/fanart.jpg')
+    liste.append(Item.ItemDir('Rechercher par mot-clé',filtreVide(),terme, True,BASE_SEARCH,\
+                         xbmcaddon.Addon().getAddonInfo('path')+'/icon.png',xbmcaddon.Addon().getAddonInfo('path')+'/fanart.jpg',10))
     
     return liste
 
@@ -75,29 +71,45 @@ def menuGroupes(filtres):
 
     if gr==regionId:
         for item in getRegions():
-            liste.append({'id':item['regionId'],'groupBy': 'region-'+str(item['friendlyUrl']), 'nom': item['name'],'resume':'Region'})
+            f = parse.getCopy(filtres)
+            f['search'][gr]=str(item[regionId])
+            f['finished'] = True
+            
+            liste.append(Item.ItemDir(item['name'],f,regionId,True, BASE_API,\
+                       xbmcaddon.Addon().getAddonInfo('path')+'/icon.png',xbmcaddon.Addon().getAddonInfo('path')+'/fanart.jpg',1))
+
     elif gr==themeId:
         for item in getCategories():
-            liste.append({'id':item['categoryId'],'groupBy': 'categorie-'+str(item['friendlyUrl']), 'nom': item['title'],'resume':'Theme'})
+            f = parse.getCopy(filtres)
+            f['search'][gr]=str(item['categoryId'])
+            f['finished'] = True
+            liste.append(Item.ItemDir(item['title'],f,themeId,True, BASE_API,\
+                       xbmcaddon.Addon().getAddonInfo('path')+'/icon.png',xbmcaddon.Addon().getAddonInfo('path')+'/fanart.jpg',1))
+
     elif gr==form:
         for item in getFormats():
-            liste.append({'id':item['formatId'],'groupBy': 'theme-'+str(item['friendlyUrl']), 'nom': item['title'],'resume':'Format'})
+            f = parse.getCopy(filtres)
+            f['search'][gr]=str(item['formatId'])
+            f['finished'] = True
+            liste.append(Item.ItemDir(item['title'],f,themeId,True, BASE_API,\
+                       xbmcaddon.Addon().getAddonInfo('path')+'/icon.png',xbmcaddon.Addon().getAddonInfo('path')+'/fanart.jpg',1))
+
     elif gr==membreId:
         for item in getPartners():
-            liste.append({'id':item['partnerId'],'groupBy': 'theme-'+str(item['friendlyUrl']), 'nom': item['name'],'resume':item['description'],\
-                          'image':getThumbnails(item['imageUrlTemplate'])})
-    for item in liste :
-        item['isDir']= True
-        item['nom']= urllib2.unquote(item['nom'])
-        item['resume']= urllib2.unquote(item['resume'])
-        item['url'] = BASE_SEARCH
-        if not 'image' in item:
-            item['image']=xbmcaddon.Addon().getAddonInfo('path')+'/icon.png'
-        item['fanart']=xbmcaddon.Addon().getAddonInfo('path')+'/fanart.jpg'
-        item['filtres'] = parse.getCopy(filtres)
-        item['filtres']['search'][gr]=str(item['id'])
-        item['filtres']['finished'] = True
-    
+            f = parse.getCopy(filtres)
+            f['search'][gr]=str(item['partnerId'])
+            f['finished'] = True
+            liste.append(Item.ItemDir(item['name'],f,themeId,True, BASE_API,\
+                       getThumbnails(item['imageUrlTemplate']),getFanArt(item['imageUrlTemplate']),1))
+    elif gr=='serie':
+        htmltxt = getCapsules(filtres['url'])
+        listeId = parse.get_liste_ids(htmltxt)
+        for item in listeId:
+            ajouterUnItem(liste,item)
+    elif gr=='dossier':
+        listeId = getDossier(filtres['url'])
+        for item in listeId:
+            liste.append(Item.ItemVideo(item))
     return liste
 
 def logjson(json):
@@ -122,13 +134,14 @@ def get_liste(filtres):
     htmltxt =searchJson['html']
 
     listeId = parse.get_liste_ids(htmltxt)
+    
     if len(listeId)==0:
         return listeFiltree
+    
     nbItemsTotal = searchJson['count']
     endOfList = searchJson['endOfList']
     nbItemsActuels = len(listeId)
 
-   # xbmc.log(str(nbItemsTotal) + ' ' + str(endOfList) + ' ' + str(nbItemsActuels))
     pageActuelle = int(filtres['search']['page'])
     import math
     nbPages = int(math.ceil((nbItemsTotal*1.0)/nbItemsActuels))
@@ -137,9 +150,7 @@ def get_liste(filtres):
         creerNavig(listeFiltree,filtres, 'Page précédente', pageActuelle-1,nbPages)
 
     for item in listeId:
-        show = formatShow(item)
-        show['filtres'] = parse.getCopy(filtres)
-        listeFiltree.append(show)
+        ajouterUnItem(listeFiltree,item)
 
     if not endOfList:
         creerNavig(listeFiltree,filtres, 'Page suivante', pageActuelle+1,nbPages)
@@ -151,39 +162,41 @@ def creerNavig(liste,filtres, titre, numPage, totalPage):
     filtre['search']['page'] =str(numPage)
     titre = "[B]"+titre+ " (" +  str(numPage) + " sur " + str(totalPage)+")[/B]"
 
-    creerItem(liste,titre,filtre,filtre[groupBy],True, '',\
-                   xbmcaddon.Addon().getAddonInfo('path')+'/icon.png',xbmcaddon.Addon().getAddonInfo('path')+'/fanart.jpg')
+    liste.append(Item.ItemDir(titre,filtre,filtre[groupBy],True, '',\
+                   xbmcaddon.Addon().getAddonInfo('path')+'/icon.png',xbmcaddon.Addon().getAddonInfo('path')+'/fanart.jpg',1))
 
-
-def formatShow(mediaID):
-    episode = getShow(str(mediaID))
+def ajouterUnItem(liste, item):
     
-    item = {'nom': episode['title'], 'resume':episode['description']}
-    item['mediaId'] = mediaID
-    item['sourceId'] = episode['mediaContents'][0]['sourceId']
-    item['source']=  episode['mediaContents'][0]['source']
-    item['isDir'] = False
-    item['url'] = episode['permalink']
-    item['credits'] = episode['credits']
-    item['image']=getThumbnails(episode['imageUrlTemplate'])
-    item['fanart'] = getFanArt(episode['imageUrlTemplate'])
-    try:
-        item['genreId'] =  episode['categories'][0]['category']['title']
-    except Exception:
-        item['genreId'] = ''
-    item['nomComplet'] = episode['title']
-    item['description'] = episode['shortDescription']
-    item['duree'] = 0 #episode['duration']/1000
-    item['seasonNo'] = None # episode['seasonNo']
-    item['episodeNo'] = None #episode['episodeNo']
-    item['startDate'] = episode['publishDates']['start']
-    item['endDate'] = episode['publishDates']['end']
-    item['endDateTxt'] = str(item['endDate'])
+    if parse.isSerie(item):
+        mediaID = parse.getId(item)
+        serie = getSerie(mediaID)       
+        f = filtreVide()
+        f['groupBy']='serie'
+        f['url'] = serie['permalink']
+        f['finished'] = False
+        liste.append(Item.ItemDir(serie['title'],f,'serie',True, serie['permalink'],\
+                       getThumbnails(serie['imageUrlTemplate']),getFanArt(serie['imageUrlTemplate']),5,serie['publishDate'],serie['description']))
 
-    #item['nom'] = item['nom'] + ' ' + item['genreId'] + ' ' + item['mediaId']
-    #item['nom'] = episode['title'] + ' ' + episode['mediaContents'][0]['sourceId'] +' ' + episode['region']['name'] + ' ' +episode['mediaContents'][0]['source']
+        
+    elif parse.isDossier(item):
+        
+        url = parse.getSerieUrl(item)
+        title = html.html_unescape((parse.getTitle(item)).encode('utf-8','ignore'))
+        image = 'http:'+parse.getImage(item)
+        f = filtreVide()
+        f['groupBy']='dossier'
+        f['url'] = url
+        f['finished'] = False
+        liste.append(Item.ItemDir(title,f,'dossier',True, url,\
+                       image,xbmcaddon.Addon().getAddonInfo('path')+'/fanart.jpg',6))
+    elif parse.isBalado(item):
+        mediaID = parse.getId(item)
+        liste.append(Item.ItemVideo(mediaID,'BALADO'))
     
-    return item
+    else:
+        mediaID = parse.getId(item)
+        liste.append(Item.ItemVideo(mediaID))
+   
 
 def getThumbnails(url):
     thumbLink = re.sub('{w}', '320', url)
@@ -199,18 +212,15 @@ def getShow(mediaId):
     database = simplejson.loads(cache.get_cached_content(BASE_API+ 'Capsules/' + mediaId))
     return database
 
-def getMediaUID(subtext):
-    dictionnary = simplejson.loads((cache.get_cached_content(BASE_LIMELIGHT + subtext)))
-    if dictionnary!=None:
-        return dictionnary['limelightUid']
-    return ''
-    
-    
-def getAll():
-    import xml.etree.ElementTree as ET
-    database = ET.parse(cache.get_cached_content(BASE_RSS + 'capsules.xml'))
+def getSerie(mediaId):
+    database = simplejson.loads(cache.get_cached_content(BASE_API+ 'Containers/' + mediaId))
     return database
 
+def getCapsules(url):
+    return parse.getContents(cache.get_cached_content(url))
+
+def getDossier(url):
+    return parse.getDossiers(cache.get_cached_content(url))
 
 def getSearch(data):
     data = dict((k, v) for k, v in data.iteritems() if v)
@@ -229,8 +239,13 @@ def getCategories():
 
 
 def getFormats():
-    database = simplejson.loads(cache.get_cached_content(BASE_API + 'Formats'))
-    return database
+    #database = simplejson.loads(cache.get_cached_content(BASE_API + 'Formats'))
+    #return database
+    return [{'formatId':1,'title':'Les vidéos'},\
+            #{'formatId':2,'title':'Articles'},\
+            #{'formatId':3,'title':'Balados'},\
+            {'formatId':4,'title':'Les dossiers'},\
+            {'formatId':5,'title':'Les séries'}]
 
 
 def getPartners():

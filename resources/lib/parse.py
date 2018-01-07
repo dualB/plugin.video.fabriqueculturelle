@@ -18,7 +18,8 @@ def getP(txt):
 
 def isBalado(item):
     return re.search('/balados/',item) is not None
-
+def isArticle(item):
+    return re.search('/articles/',item) is not None
 def isSerie(item):
     return re.search('/series/',item) is not None
 

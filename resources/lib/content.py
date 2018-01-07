@@ -21,6 +21,12 @@ groupBy = 'groupBy'
 exclureCommunauteOnly = 'exclureCommunauteOnly'
 hasPublicite = 'hasPublicite'
 
+def peupler(filtres):
+    ajouterItemAuMenu(getContent(filtres))
+
+def ajouterItemAuMenu(items):    
+    for item in items:
+        item.addVideo()
 
 def getContent(filtres):
     if filtres['finished']==False:
@@ -137,7 +143,7 @@ def get_liste(filtres):
     
     if len(listeId)==0:
         return listeFiltree
-    
+
     nbItemsTotal = searchJson['count']
     endOfList = searchJson['endOfList']
     nbItemsActuels = len(listeId)
@@ -146,24 +152,24 @@ def get_liste(filtres):
     import math
     nbPages = int(math.ceil((nbItemsTotal*1.0)/nbItemsActuels))
 
-    if not pageActuelle==1:
-        creerNavig(listeFiltree,filtres, 'Page précédente', pageActuelle-1,nbPages)
+    #if not pageActuelle==1:
+    #    creerNavig(listeFiltree,filtres, 'Page précédente', pageActuelle-1,nbPages)
 
     for item in listeId:
         ajouterUnItem(listeFiltree,item)
 
     if not endOfList:
-        creerNavig(listeFiltree,filtres, 'Page suivante', pageActuelle+1,nbPages)
+        creerNavig(listeFiltree,filtres, 'Page suivante', pageActuelle+1,nbPages,'/resources/media/test.png' )
         
     return listeFiltree
 
-def creerNavig(liste,filtres, titre, numPage, totalPage):
+def creerNavig(liste,filtres, titre, numPage, totalPage,icon = '/icon.png'):
     filtre = parse.getCopy(filtres)
     filtre['search']['page'] =str(numPage)
     titre = "[B]"+titre+ " (" +  str(numPage) + " sur " + str(totalPage)+")[/B]"
 
     liste.append(Item.ItemDir(titre,filtre,filtre[groupBy],True, '',\
-                   xbmcaddon.Addon().getAddonInfo('path')+'/icon.png',xbmcaddon.Addon().getAddonInfo('path')+'/fanart.jpg',1))
+                   xbmcaddon.Addon().getAddonInfo('path')+icon,xbmcaddon.Addon().getAddonInfo('path')+'/fanart.jpg',1))
 
 def ajouterUnItem(liste, item):
     
@@ -179,7 +185,6 @@ def ajouterUnItem(liste, item):
 
         
     elif parse.isDossier(item):
-        
         url = parse.getSerieUrl(item)
         title = html.html_unescape((parse.getTitle(item)).encode('utf-8','ignore'))
         image = 'http:'+parse.getImage(item)
@@ -189,15 +194,17 @@ def ajouterUnItem(liste, item):
         f['finished'] = False
         liste.append(Item.ItemDir(title,f,'dossier',True, url,\
                        image,xbmcaddon.Addon().getAddonInfo('path')+'/fanart.jpg',6))
+
     elif parse.isBalado(item):
-        mediaID = parse.getId(item)
-        liste.append(Item.ItemVideo(mediaID,'BALADO'))
-    
+        title = parse.getTitle(item)
+        liste.append(Item.ItemDummy('[BALADO] '+title,'[BALADO] '+title))
+    elif parse.isArticle(item):
+        title = parse.getTitle(item)
+        liste.append(Item.ItemDummy('[ARTICLE] '+ title,'[ARTICLE] '+title))        
     else:
         mediaID = parse.getId(item)
         liste.append(Item.ItemVideo(mediaID))
    
-
 def getThumbnails(url):
     thumbLink = re.sub('{w}', '320', url)
     thumbLink = re.sub('{h}', '180', thumbLink)
@@ -242,8 +249,8 @@ def getFormats():
     #database = simplejson.loads(cache.get_cached_content(BASE_API + 'Formats'))
     #return database
     return [{'formatId':1,'title':'Les vidéos'},\
-            #{'formatId':2,'title':'Articles'},\
-            #{'formatId':3,'title':'Balados'},\
+            #{'formatId':2,'title':'Les articles'},\
+            #{'formatId':3,'title':'Les balados'},\
             {'formatId':4,'title':'Les dossiers'},\
             {'formatId':5,'title':'Les séries'}]
 

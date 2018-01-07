@@ -5,7 +5,9 @@
     <string id="32110">Advances settings</string>
     <string id="32100">Search</string>
 	<string id="32103">Number of results on each page</string>
-
+    <string id="32101">Enable the addon fanart</string>
+    <string id="32102">If available, use the tv-show image as fanart</string>
+	
     <!-- CACHE -->
     <string id="32105">Cache</string>
     <string id="32106">Time to live of cached content</string>

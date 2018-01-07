@@ -2,16 +2,13 @@
 
 # version 1.0.0 - By CB
 
-import sys,urllib, xbmcgui, xbmcplugin, xbmcaddon,re,cache, xbmc, Item
+import sys,urllib, xbmcgui, xbmcplugin, xbmcaddon,re,cache, xbmc, Item, simplejson
 
 __handle__ = int(sys.argv[1])
 
-def ajouterItemAuMenu(items):    
-    for item in items:
-        item.addVideo()
 
 def jouer_video(media_uid):
-    """ function docstring """    
+    """ function docstring """  
     show = Item.ItemVideo(media_uid)
     
     source = show['source']

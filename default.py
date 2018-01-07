@@ -5,10 +5,8 @@
 
 import os, urllib, sys, traceback, xbmcplugin, xbmcaddon, xbmc, simplejson, xbmcgui
 
-from resources.lib import content, parse, navig
+from resources.lib import parse, content, navig
 
-def peupler():
-    navig.ajouterItemAuMenu(content.getContent(filtres))
 
 def search():
     keyboard = xbmc.Keyboard('', 'Rechercher dans la Fabrique Culturelle ')
@@ -17,8 +15,7 @@ def search():
         search_string = keyboard.getText()
         filtres['search']['terme']=search_string
         filtres['finished']=True
-        xbmc.log(search_string)
-        peupler()
+        content.peupler(filtres)
     
 def get_params():
     """ function docstring """
@@ -92,8 +89,8 @@ elif MODE == 99:
     ADDON.openSettings()
     
 else:
-    peupler()
-    set_content('episodes')
+    content.peupler(filtres)
+    set_content('Vidéos')
 
 if MODE is 10:
     search()

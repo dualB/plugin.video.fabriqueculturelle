@@ -2,7 +2,19 @@ import content,  xbmcgui,xbmc,sys,html,xbmcplugin,parse,urllib2,urllib,xbmcaddon
 
 ADDON = xbmcaddon.Addon()
 ADDON_IMAGES_BASEPATH = ADDON.getAddonInfo('path')+'/resources/media/images/'
+ADDON_THUMBNAIL = ADDON.getAddonInfo('path')+'/icon.png'
 ADDON_FANART = ADDON.getAddonInfo('path')+'/fanart.jpg'
+
+try:
+    youtube = xbmcaddon.Addon('plugin.video.youtube')
+except Exception:
+    youtube = None
+
+try:
+    vimeo = xbmcaddon.Addon('plugin.video.vimeo')
+except Exception:
+    vimeo = None
+
 
 __handle__ = int(sys.argv[1])
 
@@ -29,10 +41,6 @@ class ItemDir:
         startDate = show['startDate']
         plot = show['resume']
         
-        if resume=='':
-            resume = urllib.unquote(ADDON.getAddonInfo('id')+' v.'+ADDON.getAddonInfo('version'))
-        if ADDON.getSetting('EmissionNameInPlotEnabled') == 'true':
-            resume = '[B]'+nom+'[/B][CR]'+urllib.unquote(resume)
         if iconimage=='':
             iconimage = ADDON_IMAGES_BASEPATH+'default-folder.png'
 
@@ -83,7 +91,6 @@ class ItemVideo:
         except Exception:
             self.item['genreId'] = ''
         self.item['nomComplet'] = episode['title']
-        self.item['description'] = episode['shortDescription']
         self.item['duree'] = 0 #impossible a connaitre
         self.item['startDate'] = episode['publishDates']['start']
         self.item['endDate'] = episode['publishDates']['end']
@@ -100,7 +107,7 @@ class ItemVideo:
         url_info = 'none'
         finDisponibilite = show['endDateTxt']
 
-        resume = html.remove_any_html_tags(show['resume'] +'[CR][CR]' + finDisponibilite)
+        resume = html.remove_any_html_tags(show['resume'])
         duree = show['duree']
         fanart = show['fanart']
         source = show['source']
@@ -113,15 +120,19 @@ class ItemVideo:
         is_it_ok = True
 
         nameFormatted = name
-        if source !='mnmedia':
-            nameFormatted = '[COLOR red]'+name+'[/COLOR]'
-
-        entry_url = sys.argv[0]+"?url="+html.normalizeUrl(the_url)+"&sourceId="+str(mediaId)
         
-        if resume != '':
-            if ADDON.getSetting('EmissionNameInPlotEnabled') == 'true':
-                resume = '[B]'+name.lstrip()+'[/B]'+'[CR]'+resume.lstrip() 
-        else:
+        if source == 'youtube' and youtube !=None:
+            #nameFormatted = '[COLOR green]'+name+'[/COLOR]'
+            entry_url = 'plugin://plugin.video.youtube/play/?video_id=%s' % str(sourceId)
+        elif source == 'vimeo' and vimeo !=None:
+            #nameFormatted = '[COLOR yellow]'+name+'[/COLOR]'
+            entry_url = 'plugin://plugin.video.vimeo/play/?video_id=%s' % str(sourceId)
+        else:        
+            if source !='mnmedia':
+                nameFormatted = '[COLOR red]'+name+'[/COLOR]'
+            entry_url = sys.argv[0]+"?url="+html.normalizeUrl(the_url)+"&sourceId="+str(mediaId)
+
+        if resume == '':
             resume = name.lstrip()
 
         liz = xbmcgui.ListItem(\
@@ -130,8 +141,8 @@ class ItemVideo:
             type="Video",\
             infoLabels={\
                 "Title":name,\
-                "PlotOutline":html.remove_any_html_tags(resume, False),\
-                "Plot":html.html_unescape(html.remove_any_html_tags(plot,False)),\
+                "PlotOutline":resume,\
+                "Plot":resume,\
                 "Duration":duree,\
                 "Year":annee,\
                 "Premiered":premiere}\
@@ -140,23 +151,26 @@ class ItemVideo:
         setFanart(liz,fanart)
         liz.setProperty('IsPlayable', 'true')
         is_it_ok = xbmcplugin.addDirectoryItem(handle=__handle__, url=entry_url, listitem=liz, isFolder=False)
+
         return is_it_ok
 
 class ItemDummy:
 
     texte=''
-    
-    def __init__(self,string):
-        self.texte= string
+    plot = ''
+    def __init__(self,title,plott=''):
+        self.texte= html.html_unescape(html.remove_any_html_tags(title.encode('utf-8','ignore')))
+        self.plot = html.html_unescape(html.remove_any_html_tags(plott.encode('utf-8','ignore')))
+        
        
     def __getitem__(self, key):
         return False
 
     def addVideo(self):
         is_it_ok = True
-        liz = xbmcgui.ListItem(html.remove_any_html_tags(self.texte))
+        liz = xbmcgui.ListItem('[COLOR red]'+self.texte+'[/COLOR]',thumbnailImage=ADDON_THUMBNAIL)
         liz.setInfo(\
-            type="Video",infoLabels={"Title":html.remove_any_html_tags(parse.getP(self.texte)),"Plot":self.texte}       )
+            type="Video",infoLabels={"Title":self.texte,"Plot":self.plot} )
         is_it_ok = xbmcplugin.addDirectoryItem(handle=__handle__, url='', listitem=liz, isFolder=False)
         return is_it_ok
 

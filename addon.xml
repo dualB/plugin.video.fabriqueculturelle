@@ -16,8 +16,8 @@
     <extension point="xbmc.addon.metadata">
         <platform>all</platform>
 	    <summary >Addiciel vidéo donnant accès à La Fabrique Culturelle</summary>
-	    <summary lang="en">Plugin for the La Fabrique Culturelle site</summary>
-        <description>Cet addiciel permet d'accèder à La Fabrique Culturelle.</description>
-		<description lang="en">Play all videos fromLa Fabrique Culturelle  site.</description>
+	    <summary lang="en">Plugin for the La Fabrique Culturelle website</summary>
+        <description>Cet addiciel permet d'accéder à La Fabrique Culturelle.</description>
+		<description lang="en">Play all videos from La Fabrique Culturelle website.</description>
     </extension>
 </addon>

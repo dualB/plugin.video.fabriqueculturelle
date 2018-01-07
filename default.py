@@ -5,7 +5,7 @@
 
 import os, urllib, sys, traceback, xbmcplugin, xbmcaddon, xbmc, simplejson, xbmcgui
 
-from resources.lib import parse, content, navig
+from resources.lib import parse, content, player
 
 
 def search():
@@ -40,13 +40,6 @@ def set_content(content):
     """ function docstring """
     xbmcplugin.setContent(int(sys.argv[1]), content)
     return
-
-def set_sorting_methods(mode):
-    pass
-    #if xbmcaddon.Addon().getSetting('SortMethodTvShow') == '1':
-    #    xbmcplugin.addSortMethod(int(sys.argv[1]), xbmcplugin.SORT_METHOD_TITLE)
-    #    xbmcplugin.addSortMethod(int(sys.argv[1]), xbmcplugin.SORT_METHOD_TITLE_IGNORE_THE)
-    #return
 
 def log(msg):
     """ function docstring """
@@ -83,7 +76,7 @@ except StandardError:
     pass
    
 if SOURCE_ID !='':
-    navig.jouer_video(SOURCE_ID)
+    player.jouer_video(SOURCE_ID)
 
 elif MODE == 99:
     ADDON.openSettings()
@@ -96,7 +89,6 @@ if MODE is 10:
     search()
     
 if MODE is not 99:
-    set_sorting_methods(MODE)
     xbmcplugin.endOfDirectory(int(sys.argv[1]))
 
 if MODE is not 4 and xbmcaddon.Addon().getSetting('DeleteTempFiFilesEnabled') == 'true':

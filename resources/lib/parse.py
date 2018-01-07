@@ -1,5 +1,5 @@
 #""" -*- coding: utf-8 -*- """
-import copy, re,xbmc
+import copy, re,xbmc,html
 
 def get_liste_ids(txt):
     
@@ -27,7 +27,7 @@ def getSerieUrl(txt):
     return re.compile('<a href="(.+?)"', re.DOTALL).findall(txt)[0]
 
 def getTitle(txt):
-    return re.compile('<h3 class="carte-titre">(.+?)</h3>', re.DOTALL).findall(txt)[0]
+    return html.html_unescape(re.compile('<h3 class="carte-titre">(.+?)</h3>', re.DOTALL).findall(txt)[0])
 
 def getImage(txt):
     return re.compile('<img src="(.+?)"', re.DOTALL).findall(txt)[1]

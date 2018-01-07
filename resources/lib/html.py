@@ -4,11 +4,13 @@
 
 import urllib,urllib2,xbmc,re
 
-
-
-def get_url_txt(the_url):
+def get_url_txt(the_url,data=None):
     """ function docstring """
-    req = urllib2.Request(the_url)
+    if data is None:
+        req = urllib2.Request(the_url)
+    else:
+        req = urllib2.Request(the_url,urllib.urlencode(data))
+
     req.add_header(\
         'User-Agent',\
         'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:19.0) Gecko/20100101 Firefox/19.0'\
@@ -16,25 +18,6 @@ def get_url_txt(the_url):
     req.add_header('Accept-Charset', 'utf-8')
     response = urllib2.urlopen(req)
     link = response.read()
-    #link = urllib2.quote(link)
-    #link = urllib2.unquote(link)
-    response.close()
-    return link
-
-def get_url_txt_post(the_url,data):
-    """ function docstring """
-    req = urllib2.Request(the_url,urllib.urlencode(data))
-    req.add_header(\
-        'User-Agent',\
-        'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:19.0) Gecko/20100101 Firefox/19.0'\
-    )
-    req.add_header('Accept-Charset', 'utf-8')
-    response = urllib2.urlopen(req)
-    link = response.read()
- ##   link = html_unescape(link)
-    link = urllib2.quote(link)
-    link = urllib2.unquote(link)
-    
     response.close()
     return link   
 
@@ -85,9 +68,7 @@ def unescape_callback(matches):
 
 def html_unescape(data):
     """ function docstring """
-    data = data.decode('utf-8')
     data = re.sub(r'&#?x?(\w+);|\\\\u\d{4}', unescape_callback, data)
-    data = data.encode('utf-8')
     return data
 
 def normalizeUrl(the_url):

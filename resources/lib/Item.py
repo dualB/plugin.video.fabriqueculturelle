@@ -18,16 +18,33 @@ except Exception:
 
 __handle__ = int(sys.argv[1])
 
+
+class AutoFormatDict:
+    item = None
+    def __init__(self):
+        self.item = {}
+    def __getitem__(self, key):
+        return self.item[key]
+    def __setitem__(self,key,value):
+        self.item[key] = value
+
+
 class ItemDir:
-
-    item={}
-    def __init__(self,nom,filtres,group,isDir,url,image,fanart,mode,startDate=None,resume=''):
-        self.item = {'nom': urllib2.unquote(nom),'resume':resume,"filtres":filtres,\
-                     'isDir':isDir,'url':url,'image':image,'fanart':fanart,'mode':mode,\
-                     'startDate':startDate}
+        
+    def __init__(self,nom,filtres,group,isDir,url,mode,\
+                 image=ADDON_THUMBNAIL,fanart=ADDON_FANART,\
+                 startDate=None,resume=''):
+        self.item = AutoFormatDict()
+        self.item['nom'] =nom
+        self.item['resume']= resume
+        self.item["filtres"]=filtres
+        self.item['isDir']=isDir
+        self.item['url']=url
+        self.item['image']=image
+        self.item['fanart']=fanart
+        self.item['mode' ]=mode
+        self.item['startDate']=startDate
         self.item['filtres']['groupBy'] = group
-
-    
     def addVideo(self):
         show = self.item
         nom = show['nom']
@@ -43,8 +60,6 @@ class ItemDir:
         
         if iconimage=='':
             iconimage = ADDON_IMAGES_BASEPATH+'default-folder.png'
-
-
 
         entry_url = sys.argv[0]+"?url="+url+\
             "&mode="+str(mode)+\
@@ -69,15 +84,15 @@ class ItemDir:
 
 class ItemVideo:
 
-    item = {'nom':''}
-
     def __init__(self,mediaID,moreTitle = ''):
         episode = content.getShow(str(mediaID))
         title = moreTitle+episode['title']
         if episode['subTitle'] is not None:
             title = title +' | [I]' + episode['subTitle']+'[/I]'
-        self.item = {'nom': title, 'resume':episode['shortDescription']}
-        self.item['Plot'] = episode['description']
+        self.item = AutoFormatDict()
+        self.item['nom']= title
+        self.item['resume']=episode['shortDescription']
+        self.item['Plot'] = html.html_unescape(episode['description'])
         self.item['mediaId'] = mediaID
         self.item['sourceId'] = episode['mediaContents'][0]['sourceId']
         self.item['source']=  episode['mediaContents'][0]['source']
@@ -100,22 +115,22 @@ class ItemVideo:
         return self.item[key]
 
     def addVideo(self):
-        show = self.item
-        name = html.remove_any_html_tags(show['nom'])
-        the_url = show['url']
-        iconimage = show['image']
+        item = self.item
+        name = item['nom']
+        the_url = item['url']
+        iconimage = item['image']
         url_info = 'none'
-        finDisponibilite = show['endDateTxt']
+        finDisponibilite = item['endDateTxt']
 
-        resume = html.remove_any_html_tags(show['resume'])
-        duree = show['duree']
-        fanart = show['fanart']
-        source = show['source']
-        sourceId = show['sourceId']
-        annee = show['startDate'][:4]
-        premiere = show['startDate']
-        plot = html.remove_any_html_tags(show['Plot'])
-        mediaId = show['mediaId']
+        resume = item['resume']
+        duree = item['duree']
+        fanart = item['fanart']
+        source = item['source']
+        sourceId = item['sourceId']
+        annee = item['startDate'][:4]
+        premiere = item['startDate']
+        plot = html.remove_any_html_tags(item['Plot'])
+        mediaId = item['mediaId']
         
         is_it_ok = True
 
@@ -142,7 +157,7 @@ class ItemVideo:
             infoLabels={\
                 "Title":name,\
                 "PlotOutline":resume,\
-                "Plot":resume,\
+                "Plot":plot,\
                 "Duration":duree,\
                 "Year":annee,\
                 "Premiered":premiere}\
@@ -156,11 +171,10 @@ class ItemVideo:
 
 class ItemDummy:
 
-    texte=''
-    plot = ''
     def __init__(self,title,plott=''):
-        self.texte= html.html_unescape(html.remove_any_html_tags(title.encode('utf-8','ignore')))
-        self.plot = html.html_unescape(html.remove_any_html_tags(plott.encode('utf-8','ignore')))
+        self.item = AutoFormatDict()
+        self.item['texte']= title
+        self.item['plot'] = plott
         
        
     def __getitem__(self, key):
@@ -168,9 +182,12 @@ class ItemDummy:
 
     def addVideo(self):
         is_it_ok = True
-        liz = xbmcgui.ListItem('[COLOR red]'+self.texte+'[/COLOR]',thumbnailImage=ADDON_THUMBNAIL)
+        texte = self.item['texte']
+        plot = self.item['plot']
+
+        liz = xbmcgui.ListItem('[COLOR red]'+texte+'[/COLOR]',thumbnailImage=ADDON_THUMBNAIL)
         liz.setInfo(\
-            type="Video",infoLabels={"Title":self.texte,"Plot":self.plot} )
+            type="Video",infoLabels={"Title":texte,"Plot":plot} )
         is_it_ok = xbmcplugin.addDirectoryItem(handle=__handle__, url='', listitem=liz, isFolder=False)
         return is_it_ok
 

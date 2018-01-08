@@ -1,6 +1,5 @@
-# -*- coding: cp1252 -*-
+# -*- coding: utf-8 -*-
 
-""" -*- coding: utf-8 -*- """
 # version 1.0.0 - By CB
 
 import os, urllib, sys, traceback, xbmcplugin, xbmcaddon, xbmc, simplejson, xbmcgui
@@ -83,7 +82,7 @@ elif MODE == 99:
     
 else:
     content.peupler(filtres)
-    set_content('Vidéos')
+    set_content('Videos')
 
 if MODE is 10:
     search()

@@ -91,8 +91,8 @@ class ItemVideo:
             title = title +' | [I]' + episode['subTitle']+'[/I]'
         self.item = AutoFormatDict()
         self.item['nom']= title
-        self.item['resume']=episode['shortDescription']
-        self.item['Plot'] = html.html_unescape(episode['description'])
+        self.item['shortPlot']= html.clean(episode['description'])
+        self.item['longPlot'] = html.clean(episode['description'])
         self.item['mediaId'] = mediaID
         self.item['sourceId'] = episode['mediaContents'][0]['sourceId']
         self.item['source']=  episode['mediaContents'][0]['source']
@@ -122,14 +122,15 @@ class ItemVideo:
         url_info = 'none'
         finDisponibilite = item['endDateTxt']
 
-        resume = item['resume']
+        
         duree = item['duree']
         fanart = item['fanart']
         source = item['source']
         sourceId = item['sourceId']
         annee = item['startDate'][:4]
         premiere = item['startDate']
-        plot = html.remove_any_html_tags(item['Plot'])
+        shortPlot = item['shortPlot']
+        longPlot = item['longPlot']
         mediaId = item['mediaId']
         
         is_it_ok = True
@@ -147,8 +148,8 @@ class ItemVideo:
                 nameFormatted = '[COLOR red]'+name+'[/COLOR]'
             entry_url = sys.argv[0]+"?url="+html.normalizeUrl(the_url)+"&sourceId="+str(mediaId)
 
-        if resume == '':
-            resume = name.lstrip()
+        if shortPlot == '':
+            shortPlot = name.lstrip()
 
         liz = xbmcgui.ListItem(\
             nameFormatted, iconImage=ADDON_IMAGES_BASEPATH+"default-video.png", thumbnailImage=iconimage)
@@ -156,8 +157,8 @@ class ItemVideo:
             type="Video",\
             infoLabels={\
                 "Title":name,\
-                "PlotOutline":resume,\
-                "Plot":plot,\
+                "PlotOutline":shortPlot,\
+                "Plot":longPlot,\
                 "Duration":duree,\
                 "Year":annee,\
                 "Premiered":premiere}\

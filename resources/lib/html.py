@@ -66,6 +66,9 @@ def unescape_callback(matches):
     except (ValueError, KeyError):
         pass
 
+def clean(data):
+    return remove_any_html_tags( html_unescape(data),False)
+
 def html_unescape(data):
     """ function docstring """
     data = re.sub(r'&#?x?(\w+);|\\\\u\d{4}', unescape_callback, data)

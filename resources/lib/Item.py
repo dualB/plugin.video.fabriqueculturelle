@@ -91,14 +91,14 @@ class ItemVideo:
             title = title +' | [I]' + episode['subTitle']+'[/I]'
         self.item = AutoFormatDict()
         self.item['nom']= title
-        self.item['shortPlot']= html.clean(episode['description'])
-        self.item['longPlot'] = html.clean(episode['description'])
+        self.item['credits'] = html.clean(episode['credits'])
+        self.item['shortPlot']= html.clean(episode['shortDescription'])
+        self.item['longPlot'] = html.clean(episode['description']+'\n'+episode['credits'])
         self.item['mediaId'] = mediaID
         self.item['sourceId'] = episode['mediaContents'][0]['sourceId']
         self.item['source']=  episode['mediaContents'][0]['source']
         self.item['isDir'] = False
         self.item['url'] = episode['permalink']
-        self.item['credits'] = episode['credits']
         self.item['image']=content.getThumbnails(episode['imageUrlTemplate'])
         self.item['fanart'] = content.getFanArt(episode['imageUrlTemplate'])
         try:
@@ -132,6 +132,7 @@ class ItemVideo:
         shortPlot = item['shortPlot']
         longPlot = item['longPlot']
         mediaId = item['mediaId']
+        credit = item['credits']
         
         is_it_ok = True
 
@@ -161,6 +162,7 @@ class ItemVideo:
                 "Plot":longPlot,\
                 "Duration":duree,\
                 "Year":annee,\
+                #"Director":credit,\
                 "Premiered":premiere}\
         )
         liz.addContextMenuItems([('Informations', 'Action(Info)')])

@@ -1,4 +1,8 @@
-﻿[B]0.0.4 | CB | 2018-01-05[/B] 
+﻿[B]0.0.5 | CB | 2018-01-09[/B] 
+Ajout des balados externes (Soundcloud)
+Meilleur nettoyage des pages html
+
+[B]0.0.4 | CB | 2018-01-05[/B] 
 Ajout des liens externes (Youtube et Vimeo)
 Identification des articles et balados (non géré)
 Ajout d'éléments visuels

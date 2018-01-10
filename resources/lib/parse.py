@@ -18,6 +18,15 @@ def getP(txt):
 
 def isBalado(item):
     return re.search('/balados/',item) is not None
+
+def getBalado(item):
+    return searchFirst('<div class="wp-content wptype-balado">(.+?)</div>',item)
+
+def getBaladoId(item):
+    sub = searchFirst('<iframe src="(.+?)</iframe>',item)
+    ID = searchFirst('/tracks/(\d+)',sub)
+    return ID
+
 def isArticle(item):
     return re.search('/articles/',item) is not None
 def isSerie(item):
@@ -39,6 +48,14 @@ def search(item, text):
     aLink = getContent(item)
     result =  re.compile(text,re.DOTALL).findall(aLink)
     return len(result)>0
+
+def searchFirst(regex, text):
+    try:
+        return re.compile(regex,re.DOTALL).findall(text)[0]
+    except Exception:
+        return ''
+    
+
 
 def getContent(txt):
     return re.compile('<a.+?class="(.+?)">',re.DOTALL).findall(txt)[0]

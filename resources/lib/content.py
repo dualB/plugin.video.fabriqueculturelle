@@ -175,10 +175,9 @@ def ajouterUnItem(liste, item):
         liste.append(Item.ItemDir(serie['title'],f,'serie',True, serie['permalink'],5,\
                        getThumbnails(serie['imageUrlTemplate']),getFanArt(serie['imageUrlTemplate']),serie['publishDate'],serie['description']))
 
-        
     elif parse.isDossier(item):
         url = parse.getSerieUrl(item)
-        title = html.html_unescape((parse.getTitle(item)).encode('utf-8','ignore'))
+        title = parse.getTitle(item)
         image = 'http:'+parse.getImage(item)
         f = filtreVide()
         f['groupBy']='dossier'
@@ -187,11 +186,16 @@ def ajouterUnItem(liste, item):
         liste.append(Item.ItemDir(title,f,'dossier',True, url,6,image))
 
     elif parse.isBalado(item):
+        
+        url = parse.getSerieUrl(item)
         title = parse.getTitle(item)
-        liste.append(Item.ItemDummy('[BALADO] '+title,'[BALADO] '+title))
+        image = 'http:'+parse.getImage(item)
+        liste.append(Item.ItemSC(url,title,image))
+        
     elif parse.isArticle(item):
         title = parse.getTitle(item)
-        liste.append(Item.ItemDummy('[ARTICLE] '+ title,'[ARTICLE] '+title))        
+        image = 'http:'+parse.getImage(item)
+        liste.append(Item.ItemDummy('[ARTICLE] '+ title,'[ARTICLE] '+title,image))        
     else:
         mediaID = parse.getId(item)
         liste.append(Item.ItemVideo(mediaID))
@@ -219,6 +223,9 @@ def getCapsules(url):
 
 def getDossier(url):
     return parse.getDossiers(cache.get_cached_content(url))
+
+def getBalado(url):
+    return parse.getBalado(cache.get_cached_content(url))
 
 def getSearch(data):
     data = dict((k, v) for k, v in data.iteritems() if v)

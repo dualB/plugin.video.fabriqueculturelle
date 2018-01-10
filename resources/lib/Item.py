@@ -1,5 +1,7 @@
 import content,  xbmcgui,xbmc,sys,html,xbmcplugin,parse,urllib2,urllib,xbmcaddon,simplejson
 
+# version 1.0.0 - By CB
+
 ADDON = xbmcaddon.Addon()
 ADDON_IMAGES_BASEPATH = ADDON.getAddonInfo('path')+'/resources/media/images/'
 ADDON_THUMBNAIL = ADDON.getAddonInfo('path')+'/icon.png'
@@ -14,7 +16,6 @@ try:
     vimeo = xbmcaddon.Addon('plugin.video.vimeo')
 except Exception:
     vimeo = None
-
 
 __handle__ = int(sys.argv[1])
 
@@ -91,14 +92,19 @@ class ItemVideo:
             title = title +' | [I]' + episode['subTitle']+'[/I]'
         self.item = AutoFormatDict()
         self.item['nom']= title
-        self.item['credits'] = html.clean(episode['credits'])
+        try:
+            self.item['credits'] = html.clean(episode['credits'])
+        except Exception:
+            self.item['credits'] = ''
+        
         self.item['shortPlot']= html.clean(episode['shortDescription'])
-        self.item['longPlot'] = html.clean(episode['description']+'\n'+episode['credits'])
+        self.item['longPlot'] = html.clean(episode['description'])+'\n'+ self.item['credits']
         self.item['mediaId'] = mediaID
         self.item['sourceId'] = episode['mediaContents'][0]['sourceId']
         self.item['source']=  episode['mediaContents'][0]['source']
         self.item['isDir'] = False
         self.item['url'] = episode['permalink']
+
         self.item['image']=content.getThumbnails(episode['imageUrlTemplate'])
         self.item['fanart'] = content.getFanArt(episode['imageUrlTemplate'])
         try:
@@ -162,23 +168,112 @@ class ItemVideo:
                 "Plot":longPlot,\
                 "Duration":duree,\
                 "Year":annee,\
-                #"Director":credit,\
                 "Premiered":premiere}\
         )
         liz.addContextMenuItems([('Informations', 'Action(Info)')])
         setFanart(liz,fanart)
         liz.setProperty('IsPlayable', 'true')
         is_it_ok = xbmcplugin.addDirectoryItem(handle=__handle__, url=entry_url, listitem=liz, isFolder=False)
+        return is_it_ok
+
+class ItemSC:
+    def __init__(self,url,title,image):
+        episode = content.getBalado(url)
+      
+        #if episode['subTitle'] is not None:
+        #    title = title +' | [I]' + episode['subTitle']+'[/I]'
+        self.item = AutoFormatDict()
+        self.item['nom'] = title
+        #self.item['nom']= title
+        #self.item['shortPlot']= html.clean(episode['description'])
+        self.item['longPlot'] =  episode
+        #self.item['mediaId'] = mediaID
+        self.item['sourceId'] = parse.getBaladoId(episode)
+        self.item['source']=  'soundcloud'
+        #self.item['isDir'] = False
+        #self.item['url'] = episode['permalink']
+        #self.item['credits'] = episode['credits']
+        self.item['image']=image
+        #self.item['fanart'] = content.getFanArt(episode['imageUrlTemplate'])
+        #try:
+        #    self.item['genreId'] =  episode['categories'][0]['category']['title']
+        #except Exception:
+        #    self.item['genreId'] = ''
+        #self.item['nomComplet'] = episode['title']
+        #self.item['duree'] = 0 #impossible a connaitre
+        #self.item['startDate'] = episode['publishDates']['start']
+        #self.item['endDate'] = episode['publishDates']['end']
+        #self.item['endDateTxt'] = str(episode['publishDates']['end'])
+
+    def __getitem__(self, key):
+        return self.item[key]
+
+    def addVideo(self):
+        item = self.item
+        name = item['nom']
+        #the_url = item['url']
+        iconimage = item['image']
+        #url_info = 'none'
+        #finDisponibilite = item['endDateTxt']
+
+        
+        #duree = item['duree']
+        #fanart = item['fanart']
+        source = item['source']
+        sourceId = item['sourceId']
+        #annee = item['startDate'][:4]
+        #premiere = item['startDate']
+        #shortPlot = item['shortPlot']
+        longPlot = item['longPlot']
+        #mediaId = item['mediaId']
+        
+        is_it_ok = True
+
+        nameFormatted = '[BALADO] ' + name
+        
+        entry_url = 'plugin://plugin.audio.soundcloud/play/?audio_id=%s' % str(sourceId)
+        xbmc.log('La source : '+sourceId)
+
+        isPlayable = sourceId!=''
+
+        try:
+            sc = xbmcaddon.Addon('plugin.audio.soundcloud')
+        except Exception:
+            isPlayable=False
+            
+        if not isPlayable:
+            nameFormatted = '[COLOR red]'+nameFormatted+'[/COLOR]'
+
+        #if shortPlot == '':
+        #    shortPlot = name.lstrip()
+
+        liz = xbmcgui.ListItem(\
+            nameFormatted, iconImage=iconimage)
+        liz.setInfo(\
+            type="Video",\
+            infoLabels={\
+        #        "Title":name,\
+        #        "PlotOutline":shortPlot,\
+                "Plot":longPlot}\
+        #        "Duration":duree,\
+        #        "Year":annee,\
+        #        "Premiered":premiere}\
+        )
+        liz.addContextMenuItems([('Informations', 'Action(Info)')])
+        #setFanart(liz,fanart)
+        liz.setProperty('IsPlayable',str(isPlayable))
+        is_it_ok = xbmcplugin.addDirectoryItem(handle=__handle__, url=entry_url, listitem=liz, isFolder=False)
 
         return is_it_ok
 
+
 class ItemDummy:
 
-    def __init__(self,title,plott=''):
+    def __init__(self,title,plott='',image=ADDON_THUMBNAIL):
         self.item = AutoFormatDict()
         self.item['texte']= title
         self.item['plot'] = plott
-        
+        self.item['image'] = image
        
     def __getitem__(self, key):
         return False
@@ -187,8 +282,9 @@ class ItemDummy:
         is_it_ok = True
         texte = self.item['texte']
         plot = self.item['plot']
+        image = self.item['image']
 
-        liz = xbmcgui.ListItem('[COLOR red]'+texte+'[/COLOR]',thumbnailImage=ADDON_THUMBNAIL)
+        liz = xbmcgui.ListItem('[COLOR red]'+texte+'[/COLOR]',thumbnailImage=image)
         liz.setInfo(\
             type="Video",infoLabels={"Title":texte,"Plot":plot} )
         is_it_ok = xbmcplugin.addDirectoryItem(handle=__handle__, url='', listitem=liz, isFolder=False)

@@ -3,8 +3,8 @@ import content,  xbmcgui,xbmc,sys,html,xbmcplugin,parse,urllib2,urllib,xbmcaddon
 # version 1.0.0 - By CB
 
 ADDON = xbmcaddon.Addon()
-ADDON_IMAGES_BASEPATH = ADDON.getAddonInfo('path')+'/resources/media/images/'
-ADDON_THUMBNAIL = ADDON.getAddonInfo('path')+'/icon.png'
+ADDON_IMAGES_BASEPATH = ADDON.getAddonInfo('path')+'/resources/media/'
+ADDON_THUMBNAIL = ADDON_IMAGES_BASEPATH+'logo.png'
 ADDON_FANART = ADDON.getAddonInfo('path')+'/fanart.jpg'
 
 try:
@@ -60,7 +60,7 @@ class ItemDir:
         plot = show['resume']
         
         if iconimage=='':
-            iconimage = ADDON_IMAGES_BASEPATH+'default-folder.png'
+            iconimage = ADDON_THUMBNAIL
 
         entry_url = sys.argv[0]+"?url="+url+\
             "&mode="+str(mode)+\
@@ -159,7 +159,7 @@ class ItemVideo:
             shortPlot = name.lstrip()
 
         liz = xbmcgui.ListItem(\
-            nameFormatted, iconImage=ADDON_IMAGES_BASEPATH+"default-video.png", thumbnailImage=iconimage)
+            nameFormatted, iconImage=ADDON_THUMBNAIL, thumbnailImage=iconimage)
         liz.setInfo(\
             type="Video",\
             infoLabels={\

@@ -1,4 +1,6 @@
 #""" -*- coding: utf-8 -*- """
+# version 1.0.1 par dualB
+
 import copy, re,xbmc,html
 
 def get_liste_ids(txt):

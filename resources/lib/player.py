@@ -1,6 +1,5 @@
 # -*- coding: utf8 -*-
-
-# version 1.0.0 - By CB
+# version 1.0.1 par dualB
 
 import sys,urllib, xbmcgui, xbmcplugin, xbmcaddon,re,cache, xbmc, Item, simplejson
 
@@ -15,7 +14,7 @@ def jouer_video(media_uid):
     if source!='mnmedia':
         xbmc.executebuiltin('Notification(Source non supportée,Le source %s n''est pas supporté actuellement,,8000)' % simplejson.dumps(source))
         return
-        
+
     m3u8_pl=m3u8(show['sourceId'])
     uri = obtenirMeilleurStream(m3u8_pl)   
 
@@ -31,7 +30,7 @@ def jouer_video(media_uid):
         xbmc.executebuiltin('Notification(Aucun lien disponible,Incapable d''obtenir lien du vidéo,5000)')
 
 def m3u8(refID):
-    return cache.get_cached_content('https://mnmedias.api.telequebec.tv/m3u8/%s.m3u8' % refID)
+    return cache.get_cached_content('https://mnmedias.api.telequebec.tv/m3u8/%s.m3u8' % refID,False)
 
 def obtenirMeilleurStream(pl):
     """ function docstring """

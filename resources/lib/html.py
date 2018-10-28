@@ -1,25 +1,45 @@
 # -*- coding: utf8 -*-
+# version 1.0.1 par dualB
 
-# version 1.0.0 - By CB
+import urllib,urllib2,xbmc,re, ssl
+from log import log
 
-import urllib,urllib2,xbmc,re
-
-def get_url_txt(the_url,data=None):
+def get_url_txt(the_url,data=None,verified=True):
     """ function docstring """
+    log('Tentative de connection a : ' + the_url)
     if data is None:
         req = urllib2.Request(the_url)
     else:
         req = urllib2.Request(the_url,urllib.urlencode(data))
-
     req.add_header(\
-        'User-Agent',\
-        'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:19.0) Gecko/20100101 Firefox/19.0'\
-    )
+                       'User-Agent', \
+                       'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:19.0) Gecko/20100101 Firefox/19.0'\
+                       )
     req.add_header('Accept-Charset', 'utf-8')
-    response = urllib2.urlopen(req)
-    link = response.read()
-    response.close()
-    return link   
+    try:
+        context = None
+        if not verified:
+            log('Requete en SSL NON VERIFIE')
+            context = ssl._create_unverified_context()
+        response = urllib2.urlopen(req,context=context)	
+        link = response.read()
+        link = urllib2.quote(link)
+        link = urllib2.unquote(link)
+        response.close()
+        return link
+    except urllib2.HTTPError, e:
+        log('HTTPError = ' + str(e.code))
+        return ''
+    except urllib2.URLError, e:
+        log('URLError = ' + str(e.reason))
+        return ''
+    except httplib.HTTPException, e:
+        log('HTTPException')
+        return ''
+    except:
+        log('ERREUR NON PREVUE')
+        return ''
+
 
 # Merci à l'auteur de cette fonction
 def unescape_callback(matches):

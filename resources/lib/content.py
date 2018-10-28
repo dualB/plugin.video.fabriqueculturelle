@@ -1,6 +1,5 @@
 # -*- coding: utf8 -*-
- 
-# version 1.0.0 - By CB
+# version 1.0.1 par dualB
 
 import urllib2, simplejson, parse, cache, re, xbmcaddon, html, xbmc,unicodedata, Item
 
@@ -57,8 +56,6 @@ def mainMenu():
         f['search'][form]=str(item['formatId'])
         f['finished'] = True
         liste.append(Item.ItemDir(item['title'],f,themeId,True, BASE_API,1))
-    #liste.append(Item.ItemDir('Par format',filtreVide(),form, True,BASE_API +'Formats',1,\
-    #                     xbmcaddon.Addon().getAddonInfo('path')+'/icon.png',xbmcaddon.Addon().getAddonInfo('path')+'/fanart.jpg'))
 
     liste.append(Item.ItemDir('Rechercher par mot-clé',filtreVide(),terme, True,BASE_SEARCH,10))
     
@@ -110,15 +107,6 @@ def menuGroupes(filtres):
             liste.append(Item.ItemVideo(item))
     return liste
 
-def logjson(json):
-    xbmc.log(simplejson.dumps(json, sort_keys=True,indent=4, separators=(',', ': ')))
-
-def loglist(liste):
-    message =''
-    for item in liste:
-        message=message+str(item)+'\n'
-    xbmc.log(message)
-
 def get_liste(filtres):
 
     listeFiltree=[]
@@ -143,9 +131,6 @@ def get_liste(filtres):
     pageActuelle = int(filtres['search']['page'])
     import math
     nbPages = int(math.ceil((nbItemsTotal*1.0)/nbItemsActuels))
-
-    #if not pageActuelle==1:
-    #    creerNavig(listeFiltree,filtres, 'Page précédente', pageActuelle-1,nbPages)
 
     for item in listeId:
         ajouterUnItem(listeFiltree,item)
@@ -206,8 +191,9 @@ def getThumbnails(url):
     return 'http:'+thumbLink
 
 def getFanArt(url):
-    thumbLink = re.sub('{w}', '1280', url)
-    thumbLink = re.sub('{h}', '720', thumbLink)
+    thumbLink = re.sub('{w}', '1920', url)
+    thumbLink = re.sub('{h}', '1080', thumbLink)
+    xbmc.log(thumbLink)
     return 'http:'+ thumbLink
 
 def getShow(mediaId):

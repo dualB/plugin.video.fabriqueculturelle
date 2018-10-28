@@ -1,11 +1,10 @@
 # -*- coding: utf-8 -*-
 
-# version 1.0.0 - By CB
+# version 1.0.1 - By dualB
 
 import os, urllib, sys, traceback, xbmcplugin, xbmcaddon, xbmc, simplejson, xbmcgui
 
 from resources.lib import parse, content, player
-
 
 def search():
     keyboard = xbmc.Keyboard('', 'Rechercher dans la Fabrique Culturelle ')

@@ -1,6 +1,6 @@
+# version 1.0.1 par dualB
 import content,  xbmcgui,xbmc,sys,html,xbmcplugin,parse,urllib2,urllib,xbmcaddon,simplejson
-
-# version 1.0.0 - By CB
+from log import log
 
 ADDON = xbmcaddon.Addon()
 ADDON_IMAGES_BASEPATH = ADDON.getAddonInfo('path')+'/resources/media/'
@@ -232,7 +232,7 @@ class ItemSC:
         nameFormatted = '[BALADO] ' + name
         
         entry_url = 'plugin://plugin.audio.soundcloud/play/?audio_id=%s' % str(sourceId)
-        xbmc.log('La source : '+sourceId)
+        log('La source : '+sourceId)
 
         isPlayable = sourceId!=''
 
@@ -296,4 +296,5 @@ def setFanart(liz,fanart):
             liz.setProperty('fanart_image', fanart)
         else:
             liz.setProperty('fanart_image', ADDON_FANART)
-
+    else:
+        pass
